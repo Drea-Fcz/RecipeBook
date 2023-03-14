@@ -19,7 +19,7 @@ import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import { AuthComponent } from './auth/auth.component';
 import { LoadingSpinnerComponent } from './shared/components/loading-spinner/loading-spinner.component';
 import {AuthInterceptorService} from "./shared/services/auth-interceptor.service";
-import { AlertComponent } from './shared/components/alert/alert/alert.component';
+import { AlertComponent } from './shared/components/alert/alert.component';
 
 @NgModule({
   declarations: [
