@@ -1,19 +1,26 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
 import {NgForm} from "@angular/forms";
 import {AuthResponseData, AuthService} from "../shared/services/auth.service";
-import {Observable} from "rxjs";
+import {Observable, Subscription} from "rxjs";
 import {Router} from "@angular/router";
+import {PlaceholderDirective} from "../shared/directives/placeholder.directive";
+import {AlertComponent} from "../shared/components/alert/alert.component";
 
 @Component({
   selector: 'app-auths',
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.css']
 })
-export class AuthComponent implements OnInit {
+export class AuthComponent implements OnInit, OnDestroy {
   isLoginMode = true;
   isLoading = false;
   error: string = null;
-  constructor(private authService: AuthService, private router: Router) { }
+  private closeSubscription: Subscription;
+  @ViewChild(PlaceholderDirective, { static: false }) alertHost: PlaceholderDirective;
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private viewContainerRef: ViewContainerRef) { }
 
   ngOnInit(): void {
   }
@@ -41,8 +48,31 @@ export class AuthComponent implements OnInit {
       },
       errorResponse => {
         this.error =  errorResponse;
+        this.showErrorAlert(errorResponse);
         this.isLoading = false;
       });
     form.reset();
+  }
+
+  onHandleError() {
+    this.error = null;
+  }
+
+  private showErrorAlert(message: string): void {
+    const hostViewContainerRef = this.alertHost.viewContainerRef;
+    hostViewContainerRef.clear();
+
+    const componentRef = hostViewContainerRef.createComponent(AlertComponent);
+    componentRef.instance.message = message;
+    this. closeSubscription = componentRef.instance.close.subscribe( () => {
+      this.closeSubscription.unsubscribe();
+      hostViewContainerRef.clear();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.closeSubscription) {
+      this.closeSubscription.unsubscribe();
+    }
   }
 }
